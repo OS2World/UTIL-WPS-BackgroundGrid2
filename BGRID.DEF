@@ -1,0 +1,9 @@
+NAME      bgrid   WINDOWAPI
+
+DESCRIPTION    'Background Grid by Gunnar P. Seaburg, IBM Corp.'
+PROTMODE
+HEAPSIZE       1024
+STACKSIZE      8192
+
+; EXPORTS        ClientWndProc
+
