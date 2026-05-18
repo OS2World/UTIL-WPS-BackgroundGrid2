@@ -9,9 +9,11 @@ Double-click on the backround window to end it.
 * BSD 3 Clauses
 
 ## COMPILE TOOLS ##
-* C
+* gcc
+* wlink
 
 ## AUTHORS ##
 * Gunnar P. Seaburg, IBM Corp
+* Martin Iturbide
 
 ## LINKS ##
