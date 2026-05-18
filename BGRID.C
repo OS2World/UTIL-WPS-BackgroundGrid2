@@ -1,6 +1,6 @@
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-/*   HWND_DESKTOP background grid
-/*
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+//   HWND_DESKTOP background grid
+//
 //    This program displays a grid on the PM desktop background,
 //    and shows the current mouse pointer position when the pointer
 //    is over the BGRID background window.  This is helpful in
@@ -8,21 +8,22 @@
 //
 //    Double-click on the backround window to end it.
 //
-/*   Gunnar P. Seaburg
-/*   IBM SID Houston
+//   Gunnar P. Seaburg
+//   IBM SID Houston
 //   1989, 1990
-/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #define INCL_GPI
 #define INCL_WIN
 #include <stdlib.h>
 #include <stdio.h>
 #include <os2.h>
+#include "bgrid.h"
 
 #define DEF_MAIN_WND         100
 
-void QueryFontSize (HWND hwnd, SHORT * cxChar, SHORT * cyChar);
-MRESULT EXPENTRY ClientWndProc (HWND, USHORT, MPARAM, MPARAM);
+void QueryFontSize (HWND hwnd, LONG * cxChar, LONG * cyChar);
+MRESULT EXPENTRY ClientWndProc (HWND, ULONG, MPARAM, MPARAM);
 
 POINTL screen; /* size of screen */
 HWND hwndFrame;
@@ -40,23 +41,23 @@ QMSG qmsg;
 
 /* - - - - */
 
-hab = WinInitialize (NULL);
-hmq = WinCreateMsgQueue (hab, NULL);
+hab = WinInitialize (0);
+hmq = WinCreateMsgQueue (hab, 0);
 
-WinRegisterClass (hab, szClientClass, ClientWndProc, CS_SIZEREDRAW, sizeof(PVOID));
+WinRegisterClass (hab, (PCCH) szClientClass, (PFNWP) ClientWndProc, CS_SIZEREDRAW, sizeof(PVOID));
 
 screen.x = WinQuerySysValue (HWND_DESKTOP, SV_CXSCREEN);
 screen.y = WinQuerySysValue (HWND_DESKTOP, SV_CYSCREEN);
 
 hwndFrame = WinCreateStdWindow (HWND_DESKTOP, WS_VISIBLE, &flFrameFlags,
-                                szClientClass, NULL, 0L, NULL,
+                                (PCSZ) szClientClass, NULL, 0L, 0,
                                 DEF_MAIN_WND, &hwndClient);
 
 WinSetWindowPos (hwndFrame, HWND_BOTTOM, 0, 0,   /* x, y */
-                 (SHORT)screen.x, (SHORT)screen.y,    /* cx, cy */
+                 (LONG)screen.x, (LONG)screen.y,    /* cx, cy */
                  SWP_SIZE | SWP_MOVE | SWP_ZORDER | SWP_SHOW);
 
-while (WinGetMsg(hab, &qmsg, NULL, 0, 0)) WinDispatchMsg (hab, &qmsg);
+while (WinGetMsg(hab, &qmsg, 0, 0, 0)) WinDispatchMsg (hab, &qmsg);
 
 WinDestroyWindow (hwndFrame);
 WinDestroyMsgQueue (hmq);
@@ -66,7 +67,7 @@ return 0;
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-void QueryFontSize (HWND hwnd, SHORT * cxChar, SHORT * cyChar)
+void QueryFontSize (HWND hwnd, LONG * cxChar, LONG * cyChar)
 
 {
 FONTMETRICS  fm;
@@ -74,19 +75,19 @@ HPS  hps;
 
 hps = WinGetPS (hwnd);
 GpiQueryFontMetrics ( hps, (LONG) sizeof fm, &fm ) ;
-*cxChar = (SHORT) fm.lAveCharWidth;
-*cyChar = (SHORT) fm.lMaxBaselineExt;
+*cxChar = (LONG) fm.lAveCharWidth;
+*cyChar = (LONG) fm.lMaxBaselineExt;
 WinReleasePS (hps) ;
 }
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-MRESULT EXPENTRY ClientWndProc (HWND hwnd, USHORT msg, MPARAM mp1, MPARAM mp2)
+MRESULT EXPENTRY ClientWndProc (HWND hwnd, ULONG msg, MPARAM mp1, MPARAM mp2)
 
 {
 HPS       hps;
-static SHORT cxChar;     // size of average char
-static SHORT cyChar;
+static LONG cxChar;     // size of average char
+static LONG cyChar;
 static RECTL     rcl;
   POINTL pt, ptlButton;
 static CHAR   szString [20];
@@ -100,7 +101,7 @@ switch (msg) {
 
           WinSetWindowPos (hwndFrame, HWND_BOTTOM, 0, 0, 0, 0, SWP_ZORDER);
 
-          hps = WinBeginPaint (hwnd, NULL, NULL);
+          hps = WinBeginPaint (hwnd, 0, NULL);
           WinQueryWindowRect (hwnd, &rcl);
           WinFillRect (hps, &rcl, SYSCLR_BACKGROUND);
 
@@ -110,7 +111,7 @@ switch (msg) {
           GpiSetBackColor( hps, SYSCLR_WINDOW );
           GpiSetBackMix( hps, BM_OVERPAINT );
 
-          for (i=0;i<max((SHORT)screen.x, (SHORT)screen.y) ;i=i+10) {
+          for (i=0;i<max((LONG)screen.x, (LONG)screen.y) ;i=i+10) {
 
              pt.x = i;                                         /* vertical */
              pt.y = 0;
@@ -159,7 +160,7 @@ switch (msg) {
           ptlButton.x = MOUSEMSG (&msg)-> x;
           ptlButton.y = MOUSEMSG (&msg)-> y;
           sprintf (szString, "(%3ld, %3ld)", ptlButton.x, ptlButton.y);
-          WinSetWindowText (hwndCoord, szString);
+          WinSetWindowText (hwndCoord, (PCSZ) szString);
           break;
 
      case WM_BUTTON1DBLCLK:                       /* exit */
@@ -169,12 +170,11 @@ switch (msg) {
 
      case WM_CREATE:
           QueryFontSize (hwnd, &cxChar, &cyChar);
-          hwndCoord = WinCreateWindow (hwnd, WC_STATIC, "Hello",  SS_TEXT | WS_VISIBLE,
-                     0, (SHORT)(screen.y-cyChar), 12*cxChar, cyChar, hwnd, HWND_TOP, 1, NULL, NULL);
+          hwndCoord = WinCreateWindow (hwnd, WC_STATIC, (PCSZ) "Hello",  SS_TEXT | WS_VISIBLE,
+                     0, (LONG)(screen.y-cyChar), 12*cxChar, cyChar, hwnd, HWND_TOP, 1, NULL, NULL);
           break;
 
      } /* switch */
 
 return WinDefWindowProc (hwnd, msg, mp1, mp2);
 }
-

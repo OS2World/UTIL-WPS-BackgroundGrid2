@@ -1,9 +1,7 @@
 NAME      bgrid   WINDOWAPI
 
-DESCRIPTION    'Background Grid by Gunnar P. Seaburg, IBM Corp.'
-PROTMODE
+DESCRIPTION    '@#OS2World:1.01#@##1## 17 May 2026 20:00:00     ARCAOS-512::::::v1.01@@Background Grid sample'
 HEAPSIZE       1024
 STACKSIZE      8192
 
 ; EXPORTS        ClientWndProc
-
